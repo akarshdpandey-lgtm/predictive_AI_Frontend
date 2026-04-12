@@ -12,6 +12,8 @@ body {
 
 .App {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Header */
@@ -35,6 +37,7 @@ body {
 
 /* Main Content */
 .app-main {
+  flex: 1;
   max-width: 900px;
   margin: 25px auto;
   padding: 0 15px;
@@ -71,6 +74,53 @@ body {
 .nav-buttons button:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+/* Footer */
+.app-footer {
+  margin-top: 36px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 24px 18px;
+  box-shadow: 0 -8px 22px rgba(102, 126, 234, 0.18);
+}
+
+.app-footer-inner {
+  max-width: 980px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.app-footer-inner p {
+  font-size: 13px;
+  opacity: 0.95;
+  margin-top: 6px;
+}
+
+.footer-nav-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.footer-nav-buttons button {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.25s ease;
+}
+
+.footer-nav-buttons button:hover,
+.footer-nav-buttons button.active {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
 }
 
 /* Home Page */
@@ -177,20 +227,95 @@ form button:disabled {
 }
 
 /* Responsive */
+@media (max-width: 900px) {
+  .app-main {
+    max-width: 100%;
+    margin: 16px auto;
+    padding: 0 12px;
+  }
+
+  .home-page,
+  .registration-form,
+  .data-entry,
+  .dashboard,
+  .diet-plan,
+  .hospital-finder {
+    padding: 18px;
+  }
+}
+
 @media (max-width: 600px) {
+  .app-header {
+    padding: 16px 14px;
+  }
+
   .app-header h1 {
-    font-size: 20px;
+    font-size: 18px;
+  }
+
+  .app-header p {
+    font-size: 12px;
   }
 
   .nav-buttons {
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 10px;
+    border-radius: 14px;
+    margin-bottom: 14px;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.18) 0%, rgba(118, 75, 162, 0.18) 100%);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    box-shadow: 0 10px 24px rgba(102, 126, 234, 0.14);
   }
 
   .nav-buttons button {
     width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    padding: 9px 10px;
+    text-align: center;
+    font-size: 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    background: rgba(255, 255, 255, 0.9);
+    color: #3d467e;
+    white-space: normal;
+    line-height: 1.2;
+  }
+
+  .nav-buttons button.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: transparent;
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.35);
   }
 
   .app-main {
     padding: 0 10px;
+  }
+
+  .home-page {
+    border-radius: 10px;
+    padding: 14px;
+  }
+
+  .home-page table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .footer-nav-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    justify-content: stretch;
+  }
+
+  .footer-nav-buttons button {
+    width: 100%;
+    min-width: 0;
+    white-space: normal;
+    line-height: 1.2;
   }
 }

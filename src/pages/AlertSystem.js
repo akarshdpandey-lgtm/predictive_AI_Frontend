@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import { useLang } from '../LanguageContext';
 
 function AlertSystem({ userId }) {
+  const { t, lang } = useLang();
   const [alerts, setAlerts] = useState([]);
   const [assessments, setAssessments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,6 +15,153 @@ function AlertSystem({ userId }) {
   const [showShareConfirm, setShowShareConfirm] = useState(false);
   const [selectedFacility, setSelectedFacility] = useState(null);
   const [shareStatus, setShareStatus] = useState({});
+  const [areaType, setAreaType] = useState(localStorage.getItem('dietAreaType') || 'rural');
+  const isHindi = lang === 'hi';
+  const tt = (key, fallbackText) => {
+    const value = t(key);
+    return value === key ? fallbackText : value;
+  };
+
+  const getDietPlanByAreaSeverity = (area, severity) => {
+    const text = {
+      en: {
+        rural: {
+          SAM: {
+            title: 'Rural SAM Diet Plan (High Energy + Protein)',
+            meals: [
+              'Morning: Porridge + jaggery + 1 tsp ghee',
+              'Lunch: Khichdi (lentils + rice + vegetables + oil)',
+              'Evening: Banana mash + roasted chana powder in milk/water',
+              'Dinner: Soft roti mashed in dal + seasonal vegetables',
+              'Before sleep: Milk or sattu drink'
+            ],
+            tips: [
+              'Give small meals every 2-3 hours (5-6 feeds/day).',
+              'Add 1-2 tsp oil/ghee to meals to increase calories.',
+              'If edema or severe SAM is present, arrange immediate NRC referral.'
+            ]
+          },
+          MAM: {
+            title: 'Rural MAM Diet Plan (Catch-up Growth)',
+            meals: [
+              'Morning: Poha/upma with peanuts',
+              'Lunch: Dal-rice + 1 egg (if available) or soybean',
+              'Evening: Fruit (banana/papaya) + chana',
+              'Dinner: Roti + dal + green vegetables',
+              'Extra: Groundnut-jaggery ladoo or sattu'
+            ],
+            tips: [
+              'Give one protein source daily: dal, egg, chana, soybean.',
+              'Maintain hygiene: handwashing and safe drinking water.',
+              'Track weight and MUAC every week.'
+            ]
+          }
+        },
+        urban: {
+          SAM: {
+            title: 'Urban SAM Diet Plan (Therapeutic Home Support)',
+            meals: [
+              'Morning: Oats porridge with milk + peanut butter',
+              'Mid meal: Banana + curd smoothie',
+              'Lunch: Soft rice + dal + paneer/egg mash',
+              'Evening: Semolina halwa with ghee + nut powder',
+              'Dinner: Vegetable khichdi + oil/ghee'
+            ],
+            tips: [
+              'Give energy-dense foods: milk powder, peanut paste, ghee, curd.',
+              'Give 5-6 small feeds daily; do not force large portions.',
+              'For SAM, doctor/NRC follow-up within 24 hours is recommended.'
+            ]
+          },
+          MAM: {
+            title: 'Urban MAM Diet Plan (Balanced Recovery)',
+            meals: [
+              'Morning: Vegetable omelette / paneer bhurji + roti',
+              'Mid meal: Fruit + yogurt',
+              'Lunch: Rice/roti + dal + chicken/soy/paneer',
+              'Evening: Sprouts chaat + coconut water',
+              'Dinner: Millet khichdi + mixed vegetables + curd'
+            ],
+            tips: [
+              'Keep a carb + protein + fat balance in each meal.',
+              'Reduce sugary snacks; prefer fresh home-cooked food.',
+              'Do a growth review every 2 weeks.'
+            ]
+          }
+        }
+      },
+      hi: {
+        rural: {
+          SAM: {
+            title: 'ग्रामीण SAM डाइट प्लान (उच्च ऊर्जा + प्रोटीन)',
+            meals: [
+              'सुबह: दलिया + गुड़ + 1 चम्मच घी',
+              'दोपहर: खिचड़ी (दाल + चावल + सब्जी + तेल)',
+              'शाम: केला मैश + भुना चना पाउडर दूध/पानी में',
+              'रात: मुलायम रोटी दाल में मैश + मौसमी सब्जी',
+              'सोने से पहले: दूध या सत्तू ड्रिंक'
+            ],
+            tips: [
+              'हर 2-3 घंटे में छोटा मील दें (दिन में 5-6 बार)।',
+              'कैलोरी बढ़ाने के लिए खाने में 1-2 चम्मच तेल/घी जोड़ें।',
+              'एडीमा या गंभीर SAM में तुरंत NRC रेफरल करें।'
+            ]
+          },
+          MAM: {
+            title: 'ग्रामीण MAM डाइट प्लान (कैच-अप ग्रोथ)',
+            meals: [
+              'सुबह: पोहा/उपमा + मूंगफली',
+              'दोपहर: दाल-चावल + 1 अंडा (यदि उपलब्ध) या सोयाबीन',
+              'शाम: फल (केला/पपीता) + चना',
+              'रात: रोटी + दाल + हरी सब्जी',
+              'अतिरिक्त: मूंगफली-गुड़ लड्डू या सत्तू'
+            ],
+            tips: [
+              'रोज एक प्रोटीन स्रोत दें: दाल, अंडा, चना, सोयाबीन।',
+              'सफाई रखें: हाथ धोना और सुरक्षित पानी।',
+              'हर हफ्ते वजन और MUAC ट्रैक करें।'
+            ]
+          }
+        },
+        urban: {
+          SAM: {
+            title: 'शहरी SAM डाइट प्लान (उपचारात्मक होम सपोर्ट)',
+            meals: [
+              'सुबह: ओट्स पॉरिज दूध + पीनट बटर के साथ',
+              'मिड मील: केला + दही स्मूदी',
+              'लंच: मुलायम चावल + दाल + पनीर/अंडा मैश',
+              'शाम: सूजी हलवा घी + नट्स पाउडर के साथ',
+              'डिनर: सब्जियों वाली खिचड़ी + तेल/घी'
+            ],
+            tips: [
+              'ऊर्जा-समृद्ध भोजन दें: मिल्क पाउडर, पीनट पेस्ट, घी, दही।',
+              'दिन में 5-6 छोटे फीड दें; एक बार में जबरदस्ती न करें।',
+              'SAM में 24 घंटे के भीतर डॉक्टर/NRC फॉलो-अप करें।'
+            ]
+          },
+          MAM: {
+            title: 'शहरी MAM डाइट प्लान (संतुलित रिकवरी)',
+            meals: [
+              'सुबह: वेजिटेबल ऑमलेट / पनीर भुर्जी + रोटी',
+              'मिड मील: फल + दही',
+              'लंच: चावल/रोटी + दाल + चिकन/सोया/पनीर',
+              'शाम: स्प्राउट्स चाट + नारियल पानी',
+              'डिनर: मिलेट खिचड़ी + मिक्स वेज + दही'
+            ],
+            tips: [
+              'हर प्लेट में कार्ब + प्रोटीन + फैट का संतुलन रखें।',
+              'मीठे स्नैक्स कम करें; घर का ताजा भोजन दें।',
+              'हर 2 हफ्ते में ग्रोथ रिव्यू करें।'
+            ]
+          }
+        }
+      }
+    };
+
+    const languageKey = text[lang] ? lang : 'en';
+    const localizedPlans = text[languageKey];
+    return localizedPlans[area]?.[severity] || null;
+  };
 
   // Assessments load karo
   useEffect(() => {
@@ -389,19 +538,25 @@ function AlertSystem({ userId }) {
     setSharedData(existing);
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem('dietAreaType', areaType);
+  }, [areaType]);
+
   const latestAssessment = assessments[0];
+  const needsDietPlan = latestAssessment && (latestAssessment.severity === 'SAM' || latestAssessment.severity === 'MAM');
+  const dietPlan = needsDietPlan ? getDietPlanByAreaSeverity(areaType, latestAssessment.severity) : null;
 
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '50px' }}>
-        <p style={{ fontSize: '18px', color: '#667eea' }}>Loading alerts...</p>
+        <p style={{ fontSize: '18px', color: '#667eea' }}>{tt('loading', 'Loading...')}</p>
       </div>
     );
   }
 
   return (
     <div style={{ padding: '10px' }}>
-      <h2 style={{ color: '#667eea', marginBottom: '20px' }}>Alert System</h2>
+      <h2 style={{ color: '#667eea', marginBottom: '20px' }}>{tt('alert_title', 'Alert System')}</h2>
 
       {/* Auto Share Toggle */}
       <div style={{
@@ -412,10 +567,12 @@ function AlertSystem({ userId }) {
       }}>
         <div>
           <p style={{ margin: 0, fontWeight: 'bold', color: autoShareEnabled ? '#155724' : '#721c24' }}>
-            Auto Data Share: {autoShareEnabled ? 'ON' : 'OFF'}
+            {isHindi ? 'ऑटो डेटा शेयर' : 'Auto Data Share'}: {autoShareEnabled ? 'ON' : 'OFF'}
           </p>
           <p style={{ margin: '5px 0 0 0', fontSize: '13px', color: '#666' }}>
-            SAM aane par automatically nearest hospital/anganwadi ko data bheja jayega
+            {isHindi
+              ? 'SAM आने पर अपने आप नजदीकी अस्पताल/आंगनवाड़ी को डेटा भेजा जाएगा'
+              : 'On SAM, data will be auto-shared to nearest hospital/anganwadi'}
           </p>
         </div>
         <button onClick={() => setAutoShareEnabled(!autoShareEnabled)} style={{
@@ -434,8 +591,10 @@ function AlertSystem({ userId }) {
           textAlign: 'center', padding: '40px', background: '#f8f9fa',
           borderRadius: '12px', marginBottom: '20px'
         }}>
-          <p style={{ fontSize: '18px', color: '#666' }}>Koi alert nahi hai</p>
-          <p style={{ fontSize: '14px', color: '#999' }}>Pehle Data Entry mein assessment karein</p>
+          <p style={{ fontSize: '18px', color: '#666' }}>{isHindi ? 'कोई अलर्ट नहीं है' : 'No alerts found'}</p>
+          <p style={{ fontSize: '14px', color: '#999' }}>
+            {isHindi ? 'पहले Data Entry में assessment करें' : 'Please complete Data Entry assessment first'}
+          </p>
         </div>
       )}
 
@@ -452,8 +611,9 @@ function AlertSystem({ userId }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
             <span style={{ fontSize: '30px' }}>{alert.icon}</span>
             <div style={{ flex: 1 }}>
-              <h3 style={{ margin: 0, color: alert.color, fontSize: '16px' }}>{alert.title}</h3>
-              <p style={{ margin: '3px 0 0 0', color: '#333', fontSize: '14px' }}>{alert.titleHi}</p>
+              <h3 style={{ margin: 0, color: alert.color, fontSize: '16px' }}>
+                {isHindi && alert.titleHi ? alert.titleHi : alert.title}
+              </h3>
             </div>
             <span style={{
               padding: '5px 15px', borderRadius: '20px',
@@ -469,9 +629,51 @@ function AlertSystem({ userId }) {
             background: 'white', padding: '15px', borderRadius: '8px',
             marginBottom: '15px', borderLeft: `5px solid ${alert.color}`
           }}>
-            <p style={{ margin: 0, fontSize: '15px', color: '#333' }}>{alert.message}</p>
-            <p style={{ margin: '5px 0 0 0', fontSize: '14px', color: '#666' }}>{alert.messageHi}</p>
+            <p style={{ margin: 0, fontSize: '15px', color: '#333' }}>
+              {isHindi && alert.messageHi ? alert.messageHi : alert.message}
+            </p>
           </div>
+
+          {(alert.assessment?.severity === 'SAM' || alert.assessment?.severity === 'MAM') && dietPlan && (
+            <div style={{
+              background: '#ffffff',
+              borderRadius: '10px',
+              border: '2px dashed #4caf50',
+              padding: '14px',
+              marginBottom: '15px'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                <h4 style={{ margin: 0, color: '#2e7d32' }}>
+                  {tt('diet_title', 'Diet Plan')} ({areaType.toUpperCase()})
+                </h4>
+                <select
+                  value={areaType}
+                  onChange={(e) => setAreaType(e.target.value)}
+                  style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid #ccc', fontWeight: 'bold' }}
+                >
+                  <option value="rural">{tt('diet_rural', 'Rural')}</option>
+                  <option value="urban">{tt('diet_urban', 'Urban')}</option>
+                </select>
+              </div>
+              <p style={{ margin: '8px 0', fontWeight: 'bold', color: '#333' }}>{dietPlan.title}</p>
+              <p style={{ margin: '8px 0 4px 0', color: '#2e7d32', fontWeight: 'bold' }}>
+                {isHindi ? 'भोजन सुझाव:' : 'Meal suggestions:'}
+              </p>
+              <ul style={{ margin: '0 0 8px 18px', color: '#444' }}>
+                {dietPlan.meals.map((meal, idx) => (
+                  <li key={`meal-${idx}`} style={{ marginBottom: '4px' }}>{meal}</li>
+                ))}
+              </ul>
+              <p style={{ margin: '8px 0 4px 0', color: '#2e7d32', fontWeight: 'bold' }}>
+                {tt('diet_tips', 'Important Tips')}:
+              </p>
+              <ul style={{ margin: '0 0 0 18px', color: '#444' }}>
+                {dietPlan.tips.map((tip, idx) => (
+                  <li key={`tip-${idx}`} style={{ marginBottom: '4px' }}>{tip}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Auto Share Status */}
           {alert.autoShare && (
@@ -522,13 +724,60 @@ function AlertSystem({ userId }) {
         </div>
       ))}
 
+      {needsDietPlan && dietPlan && (
+        <div style={{
+          background: '#f1f8e9',
+          borderRadius: '12px',
+          border: '2px solid #8bc34a',
+          padding: '18px',
+          marginBottom: '20px'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <h3 style={{ margin: 0, color: '#2e7d32' }}>
+              {isHindi ? 'सुझावित डाइट' : 'Recommended Diet'} ({latestAssessment.severity})
+            </h3>
+            <select
+              value={areaType}
+              onChange={(e) => setAreaType(e.target.value)}
+              style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #9ccc65', fontWeight: 'bold' }}
+            >
+              <option value="rural">{tt('diet_rural', 'Rural')}</option>
+              <option value="urban">{tt('diet_urban', 'Urban')}</option>
+            </select>
+          </div>
+          <p style={{ margin: '8px 0 10px 0', color: '#333', fontWeight: 'bold' }}>{dietPlan.title}</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+            <div style={{ background: 'white', borderRadius: '10px', padding: '12px' }}>
+              <p style={{ margin: '0 0 8px 0', color: '#2e7d32', fontWeight: 'bold' }}>
+                {tt('diet_meal_time', 'Meal Schedule')}
+              </p>
+              <ul style={{ margin: '0 0 0 18px', color: '#444' }}>
+                {dietPlan.meals.map((meal, idx) => (
+                  <li key={`global-meal-${idx}`} style={{ marginBottom: '5px' }}>{meal}</li>
+                ))}
+              </ul>
+            </div>
+            <div style={{ background: 'white', borderRadius: '10px', padding: '12px' }}>
+              <p style={{ margin: '0 0 8px 0', color: '#2e7d32', fontWeight: 'bold' }}>
+                {isHindi ? 'फॉलो-अप देखभाल' : 'Follow-up care'}
+              </p>
+              <ul style={{ margin: '0 0 0 18px', color: '#444' }}>
+                {dietPlan.tips.map((tip, idx) => (
+                  <li key={`global-tip-${idx}`} style={{ marginBottom: '5px' }}>{tip}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* SMS Alert */}
       <div style={{
         background: 'white', padding: '20px', borderRadius: '12px',
         marginBottom: '20px', border: '2px solid #667eea',
         boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
       }}>
-        <h3 style={{ color: '#667eea', marginTop: 0 }}>SMS / WhatsApp Alert Bhejein</h3>
+        <h3 style={{ color: '#667eea', marginTop: 0 }}>{tt('alert_sms_title', 'SMS / WhatsApp Alert')}</h3>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '15px' }}>
           <input
             type="tel"

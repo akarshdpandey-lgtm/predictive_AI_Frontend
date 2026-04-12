@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import { useLang } from './LanguageContext';
 import TRANSLATIONS from './translations';
@@ -34,11 +34,27 @@ function App() {
     speak(pageText.substring(0, 500));
   };
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
+
+  const navItems = [
+    { key: 'home', label: `🏠 ${t('nav_home')}` },
+    { key: 'data-entry', label: `📊 ${t('nav_data')}` },
+    { key: 'scan', label: `🔍 ${t('nav_scan')}` },
+    { key: 'dashboard', label: `📈 ${t('nav_dashboard')}` },
+    { key: 'health-score', label: `❤️ ${t('nav_score')}` },
+    { key: 'diet-plan', label: `🍽️ ${t('nav_diet')}` },
+    { key: 'hospital', label: `🏥 ${t('nav_hospital')}` },
+    { key: 'alerts', label: `🚨 ${t('nav_alerts')}` },
+    { key: 'report', label: `📄 ${t('nav_report')}` }
+  ];
+
   return (
     <div className="App">
       {/* HEADER */}
       <header className="app-header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <div>
             <h1 style={{ fontSize: '22px' }}>🏥 {t('app_title')}</h1>
             <p style={{ fontSize: '12px', opacity: 0.9 }}>{t('app_subtitle')}</p>
@@ -147,17 +163,7 @@ function App() {
           <>
             {/* Navigation */}
             <nav className="nav-buttons">
-              {[
-                { key: 'home', label: `🏠 ${t('nav_home')}` },
-                { key: 'data-entry', label: `📊 ${t('nav_data')}` },
-                { key: 'scan', label: `🔍 ${t('nav_scan')}` },
-                { key: 'dashboard', label: `📈 ${t('nav_dashboard')}` },
-                { key: 'health-score', label: `❤️ ${t('nav_score')}` },
-                { key: 'diet-plan', label: `🍽️ ${t('nav_diet')}` },
-                { key: 'hospital', label: `🏥 ${t('nav_hospital')}` },
-                { key: 'alerts', label: `🚨 ${t('nav_alerts')}` },
-                { key: 'report', label: `📄 ${t('nav_report')}` }
-              ].map(btn => (
+              {navItems.map(btn => (
                 <button key={btn.key}
                   onClick={() => setCurrentPage(btn.key)}
                   className={currentPage === btn.key ? 'active' : ''}>
@@ -207,7 +213,7 @@ function App() {
                 </div>
 
                 {/* Feature Cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginTop: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '12px', marginTop: '20px' }}>
                   {[
                     { key: 'data-entry', icon: '📊', title: t('nav_data'), desc: t('home_data_desc'), color: '#007bff' },
                     { key: 'scan', icon: '🔍', title: t('nav_scan'), desc: t('home_scan_desc'), color: '#17a2b8' },
@@ -267,12 +273,22 @@ function App() {
         )}
       </main>
 
-      <footer style={{
-        textAlign: 'center', padding: '20px', background: '#333',
-        color: 'white', marginTop: '40px', fontSize: '13px'
-      }}>
-        <p>{t('footer_line1')}</p>
-        <p>{t('footer_line2')}</p>
+      <footer className="app-footer">
+        <div className="app-footer-inner">
+          {userId && (
+            <nav className="footer-nav-buttons" aria-label="Footer Navigation">
+              {navItems.map(btn => (
+                <button key={`footer-${btn.key}`}
+                  onClick={() => setCurrentPage(btn.key)}
+                  className={currentPage === btn.key ? 'active' : ''}>
+                  {btn.label}
+                </button>
+              ))}
+            </nav>
+          )}
+          <p>{t('footer_line1')}</p>
+          <p>{t('footer_line2')}</p>
+        </div>
       </footer>
 
       {/* Floating Chatbot - Right Side */}
